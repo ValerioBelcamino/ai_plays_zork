@@ -1,0 +1,4 @@
+The game is ZORK I: The Great Underground Empire.
+The player is standing in an open field west of a white house.
+The white house has a boarded front door.
+There is a small mailbox in the open field.
