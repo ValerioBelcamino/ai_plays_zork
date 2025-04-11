@@ -1,4 +1,6 @@
-The game is ZORK I: The Great Underground Empire.
-The player is standing in an open field west of a white house.
-The white house has a boarded front door.
-There is a small mailbox in the open field.
+The game is ZORK, a game of adventure, danger, and low cunning.
+You are standing in an open field west of a white house with a boarded front door.
+A white house with a boarded front door is a known location and appears to be a beautiful colonial house.
+The house is painted white and was owned by extremely wealthy individuals.
+There is a small mailbox in the open field west of the house.
+The small mailbox is already open and contains a leaflet that describes ZORK as a game to explore amazing territory.

@@ -20,9 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'zork_terminal_interaction = ai_plays_zork.zork_terminal_interaction:main',  # This line is important
-            'zork_inner_speech = ai_plays_zork.zork_inner_speech:main',  # This line is important
-            'zork_librarian = ai_plays_zork.zork_librarian:main',  # This line is important
-        ],
+            'zork_terminal_interaction = ai_plays_zork.zork_terminal_interaction:main', 
+            'zork_inner_speech = ai_plays_zork.zork_inner_speech:main', 
+            'zork_librarian = ai_plays_zork.zork_librarian:main',  
+            'zork_decision_maker = ai_plays_zork.zork_decision_maker:main',  
+        ]
     },
 )

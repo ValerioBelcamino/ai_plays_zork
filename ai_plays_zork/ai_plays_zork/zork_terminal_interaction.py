@@ -9,7 +9,7 @@ class ZorkPlayerNode(Node):
         super().__init__('zork_player')
         self.subscription = self.create_subscription(
             String,
-            'zork_input',
+            '/zork_input',
             self.command_callback,
             10
         )
@@ -17,18 +17,25 @@ class ZorkPlayerNode(Node):
         # Publisher to send game output
         self.publisher = self.create_publisher(String, '/zork_output', 10)
 
-        self.get_logger().info("ZorkPlayerNode is ready and waiting for commands on 'zork_input'")
+        print("\033[95mTZorkPlayerNode is ready and waiting for commands on 'zork_input'\033[0m\n")
+        input('press ANYTHING to START!')
+        
         # Print initial game state
         initial_output = self.read_screen_output()
-        self.get_logger().info(f"Initial game state:\n{initial_output}")
+        print(f"\033[34m{initial_output}\033[0m\n")
+        # self.get_logger().info(f"Initial game state:\n{initial_output}")
 
     def command_callback(self, msg):
         command = msg.data.strip()
-        self.get_logger().info(f"Received command: {command}")
+        # self.get_logger().info(f"Received command: {command}")
+
+        input('press ANYTHING to CONTINUE!')
+
         self.send_command_to_screen(command)
         time.sleep(0.1)
         output = self.read_screen_output()
-        self.get_logger().info(f"Zork output:\n{output}")
+        # self.get_logger().info(f"Zork output:\n{output}")
+        print(f"\033[34m{output}\033[0m\n")
 
     def send_command_to_screen(self, command):
         subprocess.run(['screen', '-S', 'zork_session', '-p', '0', '-X', 'stuff', f'{command}\n'])
@@ -40,7 +47,7 @@ class ZorkPlayerNode(Node):
         
         # Publish the message to 'zork_output' topic
         self.publisher.publish(msg)
-        self.get_logger().info(f"Published game output: {game_output}")
+        # self.get_logger().info(f"Published game output: {game_output}")
 
 
     def read_screen_output(self):
@@ -48,7 +55,12 @@ class ZorkPlayerNode(Node):
         with open('/tmp/zork_output.txt', 'r') as file:
             output_text = file.read()
 
+        # print(output_text)
+        # print(len(output_text))
+        # print(output_text[-1])
         if output_text[-2] == '>':
+            # print(output_text[-2])
+            # print(output_text[-1])
             # print('the last character is >')
             output_text = output_text[:-2]
         else:

@@ -28,10 +28,10 @@ class ZorkReasonerNode(Node):
         
         Your response should be structured, detailed, and demonstrate logical reasoning based on the game’s context. Please make sure to reason clearly, considering the game’s mechanics and storyline."""
 
-        self.human_template = "Game Output:\n{game_output}\n\nCurrent Memory:\n{current_memory}"
+        self.human_template = "Past Interactions:\n{past_interactions}\n\nCurrent Memory:\n{current_memory}"
 
         self.prompt_template = ChatPromptTemplate.from_messages(
-            [("system", self.system_template), ("user", "{text}")]
+            [("system", self.system_template), ("user", self.human_template)]
 )
 
         # Subscriber to receive game output
@@ -42,64 +42,85 @@ class ZorkReasonerNode(Node):
             10
         )
 
+        # Subscriber to receive game output
+        self.zork_input_subscriber = self.create_subscription(
+            String,
+            '/zork_input',
+            self.game_input_callback,
+            10
+        )
+
         self.reasoner_activation_subscriber = self.create_subscription(
             Bool,
-            'zork_reasoner_activation',
+            '/zork_reasoner_activation',
             self.reasoning_callback,
             10
         )
 
         # Publisher to send reasoned output
-        self.publisher = self.create_publisher(String, '/zork_reasoned_output', 10)
+        self.publisher = self.create_publisher(String, '/zork_reasoner_output', 10)
         
-        self.get_logger().info("ZorkReasonerNode is ready and listening on 'zork_output'")
+        print("\033[95mTZorkReasonerNode is ready and listening on '/zork_output'\033[0m\n")
+        self.package_path = "/home/belca/Desktop/AI_Plays_ZORK/src/ai_plays_zork/ai_plays_zork"
 
-        self.last_game_state = ""
         self.memory = ""
         self.memory_file_path = os.path.join(self.package_path, 'memory.txt')
 
+        self.last_game_state = ""
+        self.last_game_input = ""
+
+        self.last_prompts = {}
+
 
     def game_output_callback(self, msg):
-        self.get_logger().info(f"Received Zork game state:\n{self.last_game_state}")
+        # self.get_logger().info(f"Received Zork game state:\n{self.last_game_state}")
         self.last_game_state = msg.data.strip()
+        self.last_prompts[self.last_game_input] = self.last_game_state
+
+    def game_input_callback(self, msg):
+        # self.get_logger().info(f"Received Zork game state:\n{self.last_game_state}")
+        self.last_game_input = msg.data.strip()
 
 
     def reasoning_callback(self, msg):
-        self.get_logger().info(f"Reasoning")
+        # self.get_logger().info(f"Reasoning")
 
         # Reason about the game state using LangChain (Groq API)
-        reasoned_output = self.reason_about_game_state(self.last_game_state)
+        reasoner_output = self.reason_about_game_state()
 
         # Publish the reasoned output
-        self.publish_reasoned_output(reasoned_output)
+        self.publish_reasoner_output(reasoner_output)
 
 
-    def reason_about_game_state(self, game_state):
+    def reason_about_game_state(self):
         # Load the memory from file
         with open(self.memory_file_path, 'r') as file:
             self.memory = file.readlines()
+
+        print(f'\033[92m{str(self.last_prompts)}\033[0m')
+        print(f'\033[93m{self.memory}\033[0m')
             
         # Use LangChain to call Groq API through the custom LLM
         input_dict = {
-            "game_output": game_state,
+            "past_interactions": str(self.last_prompts),
             "current_memory": "\n".join(self.memory)
         }
         prompt = self.prompt_template.invoke(input_dict)
         result = self.llm.invoke(prompt)
         
-        self.get_logger().info(f"Reasoned output from LangChain/Groq: {result}")
-        print(f"\033[34m{result.content}\033[0m")
-        return result
+        # self.get_logger().info(f"Reasoned output from LangChain/Groq: {result}")
+        print(f"\033[34m{result.content}\033[0m\n")
+        return result.content
     
 
-    def publish_reasoned_output(self, reasoned_output):
+    def publish_reasoner_output(self, reasoner_output):
         # Create a message with the reasoned output
         msg = String()
-        msg.data = reasoned_output
+        msg.data = reasoner_output
 
         # Publish the message to 'zork_reasoned_output' topic
         self.publisher.publish(msg)
-        self.get_logger().info(f"Published reasoned output: {reasoned_output}")
+        # self.get_logger().info(f"Published reasoner output!")
 
 
 def main(args=None):

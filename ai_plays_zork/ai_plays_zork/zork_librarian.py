@@ -48,7 +48,7 @@ Return ONLY the updated memory list as a list of natural language sentences. Kee
         # Subscriber to receive game output
         self.subscription = self.create_subscription(
             String,
-            'zork_output',
+            '/zork_output',
             self.update_memory_callback,
             10
         )
@@ -56,8 +56,8 @@ Return ONLY the updated memory list as a list of natural language sentences. Kee
         # Subscriber to receive game input
         self.subscription = self.create_subscription(
             String,
-            'zork_input',
-            self.update_memory_callback,
+            '/zork_input',
+            self.update_last_decision,
             10
         )
 
@@ -66,21 +66,29 @@ Return ONLY the updated memory list as a list of natural language sentences. Kee
 
         # Publisher to send reasoned output
         
-        self.get_logger().info("ZorkLibrarianNode is ready and listening on 'zork_output'")
-        self.get_logger().info("ZorkLibrarianNode is ready and listening on 'zork_input'")
+        print("\033[95mTZorkLibrarianNode is ready and listening on 'zork_output'\033[0m\n")
+        print("\033[95mTZorkLibrarianNode is ready and listening on 'zork_input'\033[0m\n")
 
         self.memory_file_path = os.path.join(self.package_path, 'memory.txt')
         with open(self.memory_file_path, 'r') as file:
             self.memory = file.readlines()
-            self.get_logger().info(f"Loaded memory")
+            # self.get_logger().info(f"Loaded memory")
 
         self.last_decision = ''
 
 
+    def update_last_decision(self, msg):
+        self.last_decision = msg.data.strip()
+        # self.get_logger().info(f"Received Zork game input:\n{self.last_decision}")
+
+
     def update_memory_callback(self, msg):
         game_state = msg.data.strip()
-        self.get_logger().info(f"Received:\n{game_state}")
-        self.get_logger().info(f"last decision:\n{self.last_decision}")
+        # self.get_logger().info(f"Received:\n{game_state}")
+        # self.get_logger().info(f"last decision:\n{self.last_decision}")
+
+        print(f'\033[92m{game_state}\033[0m')
+        print(f'\033[93m{self.last_decision}\033[0m')
 
         input_dict = {
             "game_output": game_state,
@@ -97,7 +105,8 @@ Return ONLY the updated memory list as a list of natural language sentences. Kee
         self.memory = updated_memory
 
         # Pretty print updated memory in blue
-        print("\033[94m" + "\n[🧠 Updated Memory]\n" + "\n".join(self.memory) + "\033[0m")
+        # print("\033[94m" + "\n[🧠 Updated Memory]\n" + "\n".join(self.memory) + "\033[0m")
+        print(f"\033[34m{self.memory}\033[0m\n")
 
         with open(self.memory_file_path, 'w') as file:
             for line in self.memory:
@@ -105,14 +114,15 @@ Return ONLY the updated memory list as a list of natural language sentences. Kee
 
         # Publishing updated memory for the reasoner to process
         msg_to_reasoner = Bool()
-        self.get_logger().info(f"Activating Reasoner: {msg_to_reasoner}")
+        # self.get_logger().info(f"Activating Reasoner: {msg_to_reasoner}")
+        self.publisher.publish(msg_to_reasoner)
 
     def destroy_node(self):
         # Save memory to file
         with open(self.memory_file_path, 'w') as file:
             for line in self.memory:
                 file.write(line + '\n')
-        self.get_logger().info("Memory saved to memory.txt")
+        # self.get_logger().info("Memory saved to memory.txt")
         super().destroy_node()
 
         
