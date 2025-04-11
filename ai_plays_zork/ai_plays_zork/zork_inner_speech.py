@@ -16,17 +16,10 @@ class ZorkReasonerNode(Node):
 
         self.llm = init_chat_model("llama3-8b-8192", model_provider="groq")
 
-        self.system_template = """Given the current state of the text-based game Zork, analyze the game description and provide the following reasoning: 
-        - Current Environment: Describe the surroundings and setting of the character in this specific part of the game.
-        - Key Objects and Interactions: Identify any notable objects, characters, or elements that are present in the environment. Explain how these might affect the player's decisions or actions.
-        - Potential Actions: Based on the environment and objects, suggest a few possible actions the player could take next.
-        - Game Progression: How does this current state relate to the broader narrative or the progression of the game?
-
-        ### Context:
-        - **Game Output**: The latest game description or terminal output received from Zork.
-        - **Current Memory**: The accumulated history of important facts and events that have been stored over time.
-        
-        Your response should be structured, detailed, and demonstrate logical reasoning based on the game’s context. Please make sure to reason clearly, considering the game’s mechanics and storyline."""
+        self.system_template = """You are an expert player of the classic text-based adventure game Zork.  
+        Your role is to reason on the current state of the game to given a set of past input and the corresponding response from the game.
+        Additionally, another agent is keeping track of important achievements in a working memory.
+        Be clear and concise and write in English."""
 
         self.human_template = "Past Interactions:\n{past_interactions}\n\nCurrent Memory:\n{current_memory}"
 
